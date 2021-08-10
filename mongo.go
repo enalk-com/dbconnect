@@ -13,14 +13,14 @@ import (
 // MongoConfig defines all the parameters to be used for establishing
 // a mongodb connection
 type MongoConfig struct {
-	ID               string `json:"id"`
-	DB               string `json:"db"`
-	User             string `json:"user"`
-	Pwd              string `json:"pwd"`
-	AuthSource       string `json:"authSource"`
-	Host             string `json:"host"`
-	Port             int    `json:"port"`
-	ConnectionString string `json:"connectionString"`
+	ID               string `json:"id,omitempty" toml:"id,omitempty"`
+	DB               string `json:"db,omitempty" toml:"db,omitempty"`
+	User             string `json:"user,omitempty" toml:"user,omitempty"`
+	Pwd              string `json:"pwd,omitempty" toml:"pwd,omitempty"`
+	AuthSource       string `json:"authSource,omitempty" toml:"authSource,omitempty"`
+	Host             string `json:"host,omitempty" toml:"host,omitempty"`
+	Port             int    `json:"port,omitempty" toml:"port,omitempty"`
+	ConnectionString string `json:"connectionString,omitempty" toml:"connectionString,omitempty"`
 	_client          *mongo.Client
 	once             sync.Once
 }

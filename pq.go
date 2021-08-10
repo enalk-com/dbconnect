@@ -14,18 +14,18 @@ import (
 // PQConfig defines all the parameters to be used for establishing
 // a postgresql connection
 type PQConfig struct {
-	ID              string `json:"id"`
-	Host            string `json:"host,omitempty"`
-	Port            int    `json:"port,omitempty"`
-	User            string `json:"user,omitempty"`
-	Pwd             string `json:"pwd,omitempty"`
-	DB              string `json:"db,omitempty"`
-	SSLMode         string `json:"sslmode,omitempty"` // disable | require | verify-ca | verify-full
-	FallbackAppName string `json:"fallback_application_name,omitempty"`
-	ConnectTimeout  int    `json:"connect_timeout,omitempty"` // in seconds
-	SSLCert         string `json:"sslcert,omitempty"`         // location if PEM encoded cert file
-	SSLKey          string `json:"sslkey,omitempty"`          // location of PEM encoded key file
-	SSLRootCert     string `json:"sslrootcert,omitempty"`     // location of PEM encoded root certificate file
+	ID              string `json:"id,omitempty" toml:"id,omitempty"`
+	Host            string `json:"host,omitempty" toml:"host,omitempty"`
+	Port            int    `json:"port,omitempty" toml:"port,omitempty"`
+	User            string `json:"user,omitempty" toml:"user,omitempty"`
+	Pwd             string `json:"pwd,omitempty" toml:"pwd,omitempty"`
+	DB              string `json:"db,omitempty" toml:"db,omitempty"`
+	SSLMode         string `json:"sslmode,omitempty" toml:"sslmode,omitempty"` // disable | require | verify-ca | verify-full
+	FallbackAppName string `json:"fallback_application_name,omitempty" toml:"fallback_application_name,omitempty"`
+	ConnectTimeout  int    `json:"connect_timeout,omitempty" toml:"connect_timeout,omitempty"` // in seconds
+	SSLCert         string `json:"sslcert,omitempty" toml:"sslcert,omitempty"`                 // location if PEM encoded cert file
+	SSLKey          string `json:"sslkey,omitempty" toml:"sslkey,omitempty"`                   // location of PEM encoded key file
+	SSLRootCert     string `json:"sslrootcert,omitempty" toml:"sslrootcert,omitempty"`         // location of PEM encoded root certificate file
 	_db             *pgxpool.Pool
 	once            sync.Once
 }

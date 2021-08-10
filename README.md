@@ -6,43 +6,42 @@
 
 
 #### config
-```json
-// ~/.config/yourapp/config.json
-{
-	"pq": [{
-		"id": "dbID" /*could be any unique string.
-		Will be used for fetching this db later.*/
-		"user": "db user",
-		"pwd": "db pwd",
-		"host": "db host",
-		"port": 5432,
-		"db": "db name"
-		/* check struct PQConfig for more options */
-	}, ...],
-	"redis": [{
-		"id": "redis instance ID" /*could be any unique string.
-		Will be used for fetching this instance later.*/
-		"host": "redis instance host"
-		"port": 6379 /*default: 6379*/
-		"pwd": "redis instance pwd",
-		"db": "0",
-		/* check struct RedisConfig for more options */
-		
-	},...],
 
-	"mongo": [{
-		"id": "mongo instance id" /*could be any unique string.
-		Will be used for fetching this instance later.*/
-		"user": "db user", // optional
-		"pwd": "db pwd", // optional
-		"host": "db host", // optional
-		"port": 27017, // optional
-		"db": "db name", // optional
-		"authSource": "auth db name", // optional
-		"connectString": "mongodb://localhost:27017" /*  optional, however
-		takes precedence over all other options when present */
-	}]
-}
+```toml
+# ~/.config/yourapp/config.toml
+[[pq]]
+id="database ID" # can be any unique string identifier.
+# you will use this later to get a sql.DB instance
+user="db user"
+pwd="db pwd"
+host="db host"
+port="db port"
+db="db name to connect to"
+# check struct PQConfig for more options
+# more [[pq]] blocks can be added
+
+[[mongo]]
+id="mongo instance id" #could be any unique string.
+# Will be used for fetching this instance later.\
+user="db user", # optional
+pwd="db pwd", # optional
+host="db host", # optional
+port=27017, # optional
+db="db name", # optional
+authSource="auth db name", # optional
+connectString="mongodb://localhost:27017" # optional, however
+# takes precedence over all other options when present
+# more [[mongo]] blocks can be added for multiple dbs
+
+[[redis]]
+id="redis instance ID" # could be any unique string.
+# Will be used for fetching this instance later.
+host="redis instance host"
+port=6379 # default: 6379
+pwd="redis instance pwd",
+db="0",
+# check struct RedisConfig for more options
+# more [[redis]] blocks can be added for multiple dbs
 ```
 
 #### Info
