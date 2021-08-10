@@ -2,9 +2,13 @@ package dbconnect
 
 import (
 	"encoding/json"
+	"fmt"
 	"io"
 	"os"
+	"path"
 	"sync"
+
+	"github.com/BurntSushi/toml"
 )
 
 var pqMap map[string]*PQConfig
@@ -24,10 +28,20 @@ type Config struct {
 	mu    sync.Mutex
 }
 
-func initialize(v []byte) error {
+func initialize(v []byte, ext string) error {
 	var c Config
-	if err := json.Unmarshal(v, &c); err != nil {
-		return err
+
+	switch ext {
+	case ".json":
+		if err := json.Unmarshal(v, &c); err != nil {
+			return err
+		}
+	case ".toml":
+		if _, err := toml.Decode(string(v), &c); err != nil {
+			return err
+		}
+	default:
+		return fmt.Errorf("invalid extension: \"%s\"", ext)
 	}
 
 	// Redis
@@ -63,8 +77,16 @@ func initialize(v []byte) error {
 }
 
 // Init initializes the provided configuration into a map for easy fetching later
-func Init(v []byte) error {
-	if err := initialize(v); err != nil {
+func InitJSON(v []byte) error {
+	if err := initialize(v, ".json"); err != nil {
+		return err
+	}
+	return nil
+}
+
+// Init initializes the provided configuration into a map for easy fetching later
+func InitTOML(v []byte) error {
+	if err := initialize(v, ".toml"); err != nil {
 		return err
 	}
 	return nil
@@ -79,20 +101,9 @@ func InitFile(p string) error {
 	if err != nil {
 		return err
 	}
-	if err := Init(bs); err != nil {
+
+	if err := initialize(bs, path.Ext(p)); err != nil {
 		return err
 	}
-	return nil
-}
-
-// UpdateConfig updates a pre-initialized configuration.
-// You can overwrite existing config IDs by providing a new
-// configuration for the same ID.<db-type>
-func UpdateConfig(v []byte) error {
-	once = fetchOnce()
-	if err := initialize(v); err != nil {
-		return err
-	}
-
 	return nil
 }

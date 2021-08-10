@@ -8,7 +8,7 @@
 #### config
 
 ```toml
-# ~/.config/yourapp/config.toml
+# config-filename.toml
 [[pq]]
 id="database ID" # can be any unique string identifier.
 # you will use this later to get a sql.DB instance
