@@ -14,6 +14,7 @@ import (
 var pqMap map[string]*PQConfig
 var mongoMap map[string]*MongoConfig
 var redisMap map[string]*RedisConfig
+var roachMap map[string]*RoachConfig
 var once sync.Once = fetchOnce()
 
 func fetchOnce() sync.Once {
@@ -22,10 +23,11 @@ func fetchOnce() sync.Once {
 
 // Config defines the overarching container for all supported databases
 type Config struct {
-	Redis []*RedisConfig `json:"redis,omitempty"`
-	PQ    []*PQConfig    `json:"pq,omitempty"`
-	Mongo []*MongoConfig `json:"mongo,omitempty"`
-	mu    sync.Mutex
+	Redis       []*RedisConfig `json:"redis,omitempty"`
+	PQ          []*PQConfig    `json:"pq,omitempty"`
+	Mongo       []*MongoConfig `json:"mongo,omitempty"`
+	CockroachDB []*RoachConfig `json:"cockroachdb,omitempty"`
+	mu          sync.Mutex
 }
 
 func initialize(v []byte, ext string) error {
@@ -71,6 +73,17 @@ func initialize(v []byte, ext string) error {
 		}
 		for _, pq := range c.PQ {
 			pqMap[pq.ID] = pq
+		}
+	}
+
+	// cockroachdb
+	if c.CockroachDB != nil && len(c.CockroachDB) > 0 {
+		if roachMap == nil {
+			roachMap = map[string]*RoachConfig{}
+		}
+
+		for _, rc := range c.CockroachDB {
+			roachMap[rc.ID] = rc
 		}
 	}
 	return nil

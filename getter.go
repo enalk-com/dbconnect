@@ -42,6 +42,37 @@ func GetPQConfig(id string) ([]byte, error) {
 	return b, nil
 }
 
+// GetRoach returns a pointer to an pgxpool.Pool instance identified by input
+func GetRoach(id string) (*pgxpool.Pool, error) {
+	if roachMap == nil {
+		return nil, fmt.Errorf("possibly no cockroachdb configurations provided")
+	}
+
+	if _, ok := roachMap[id]; !ok {
+		return nil, fmt.Errorf("no cockroach configuration for ID: %s found", id)
+	}
+
+	return roachMap[id].db()
+}
+
+// GetRoachConfig returns the configuration struct used to create this connection
+func GetRoachConfig(id string) ([]byte, error) {
+	if roachMap == nil {
+		return nil, fmt.Errorf("possibly no cockroach db configurations provided")
+	}
+
+	if _, ok := roachMap[id]; !ok {
+		return nil, fmt.Errorf("no cockroach db configuration for ID: %s found", id)
+	}
+
+	b, err := json.Marshal(roachMap[id])
+	if err != nil {
+		return nil, fmt.Errorf("error marshalling configuration: %s", err.Error())
+	}
+
+	return b, nil
+}
+
 // GetRedisPool returns a pointer to a redis.Pool instance identified by input
 func GetRedisPool(id string) (*redis.Pool, error) {
 	if redisMap == nil {
