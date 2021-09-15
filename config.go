@@ -23,10 +23,10 @@ func fetchOnce() sync.Once {
 
 // Config defines the overarching container for all supported databases
 type Config struct {
-	Redis       []*RedisConfig `json:"redis,omitempty"`
-	PQ          []*PQConfig    `json:"pq,omitempty"`
-	Mongo       []*MongoConfig `json:"mongo,omitempty"`
-	CockroachDB []*RoachConfig `json:"cockroachdb,omitempty"`
+	Redis       []*RedisConfig `json:"redis,omitempty" toml:"redis,omitempty"`
+	PQ          []*PQConfig    `json:"pq,omitempty" toml:"pq,omitempty"`
+	Mongo       []*MongoConfig `json:"mongo,omitempty" toml:"mongo,omitempty"`
+	CockroachDB []*RoachConfig `json:"cockroachdb,omitempty" toml:"cockroachdb,omitempty"`
 	mu          sync.Mutex
 }
 
