@@ -3,7 +3,6 @@ package dbconnect
 import (
 	"context"
 	"fmt"
-	"log"
 	"strings"
 	"sync"
 
@@ -112,7 +111,6 @@ func (rc RoachConfig) connString() string {
 	}
 
 	cs := s + qs
-	log.Printf("[RouteConfig.connString] -> returning: %s\n", cs)
 	return cs
 }
 
