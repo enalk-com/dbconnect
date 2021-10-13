@@ -4,6 +4,7 @@ import (
 	// "database/sql"
 	"context"
 	"fmt"
+	"os"
 	"sync"
 
 	// pq is imported to allow sql connection using driver 'postgres'
@@ -42,6 +43,19 @@ func (pc *PQConfig) assert() error {
 	return nil
 }
 
+func (pc *PQConfig) expandEnv() {
+	pc.ID = os.ExpandEnv(pc.ID)
+	pc.Host = os.ExpandEnv(pc.Host)
+	pc.User = os.ExpandEnv(pc.User)
+	pc.Pwd = os.ExpandEnv(pc.Pwd)
+	pc.DB = os.ExpandEnv(pc.DB)
+	pc.SSLMode = os.ExpandEnv(pc.SSLMode)
+	pc.FallbackAppName = os.ExpandEnv(pc.FallbackAppName)
+	pc.SSLCert = os.ExpandEnv(pc.SSLCert)
+	pc.SSLKey = os.ExpandEnv(pc.SSLKey)
+	pc.SSLRootCert = os.ExpandEnv(pc.SSLRootCert)
+}
+
 func (pc *PQConfig) defaults() {
 	if pc.Port == 0 {
 		pc.Port = 5432
@@ -55,6 +69,7 @@ func (pc *PQConfig) defaults() {
 func (pc *PQConfig) connect() error {
 	var gerr error
 	pc.once.Do(func() {
+		pc.expandEnv()
 		if err := pc.assert(); err != nil {
 			gerr = err
 			return

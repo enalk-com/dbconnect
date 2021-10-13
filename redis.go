@@ -3,6 +3,7 @@ package dbconnect
 import (
 	"fmt"
 	"log"
+	"os"
 	"sync"
 	"time"
 
@@ -14,39 +15,23 @@ type RedisConfig struct {
 	ID string `json:"id" toml:"id"`
 	// Allowed "tcp", "unix". Default: "tcp"
 	Network string `json:"network" toml:"network"`
-	// The host to connect to
-	// Format: IP:PORT
-	Host string `json:"host" toml:"host"`
-	Port int    `json:"port" toml:"port"`
-	// Password to use when connecting with redis
-	Pwd string `json:"pwd" toml:"pwd"`
+	Host    string `json:"host" toml:"host"`
+	Port    int    `json:"port" toml:"port"`
+	Pwd     string `json:"pwd" toml:"pwd"`
 	// RawURL defines a URL using the Redis URI scheme.
 	// URLs should follow the draft IANA specification for the scheme
 	// (https://www.iana.org/assignments/uri-schemes/prov/redis).
 	// Addr when specified is preferred over this
-	RawURL string `json:"raw_url" toml:"raw_url"`
-	// DialTimeoutSeconds specifies the timeout for connecting to the Redis server
-	DialTimeoutSeconds int `json:"dial_timeout_seconds" toml:"dial_timeout_seconds"`
-	// DB defines which redis database to connect to
-	DB int `json:"db" toml:"db"`
-	// DialKeepAlive specifies the keep-alive period for TCP connections
-	// to the Redis server when no DialNetDial option is specified.
-	// If zero, keep-alives are not enabled. If no DialKeepAlive option
-	// is specified then the default of 5 minutes is used to ensure
-	// that half-closed TCP sessions are detected.
-	KeepAliveMins int `json:"keep_alive_mins" toml:"keep_alive_mins"`
-	// ReadTimeoutSeconds specifies the timeout for reading a single command.
-	ReadTimeoutSeconds int `json:"read_timeout_seconds" toml:"read_timeout_seconds"`
-	// WriteTimeoutSeconds specifies the timeout for writing a single command.
-	WriteTimeoutSeconds int `json:"write_timeout_seconds" toml:"write_timeout_seconds"`
-	// Maximum number of idle connections in the pool.
-	MaxIdle int `json:"max_idle" toml:"max_idle"`
+	RawURL              string `json:"raw_url" toml:"raw_url"`
+	DialTimeoutSeconds  int    `json:"dial_timeout_seconds" toml:"dial_timeout_seconds"`
+	DB                  int    `json:"db" toml:"db"`
+	KeepAliveMins       int    `json:"keep_alive_mins" toml:"keep_alive_mins"`
+	ReadTimeoutSeconds  int    `json:"read_timeout_seconds" toml:"read_timeout_seconds"`
+	WriteTimeoutSeconds int    `json:"write_timeout_seconds" toml:"write_timeout_seconds"`
+	MaxIdle             int    `json:"max_idle" toml:"max_idle"`
 	// Maximum number of connections allocated by the pool at a given time.
 	// When zero, there is no limit on the number of connections in the pool.
-	MaxActive int `json:"max_active" toml:"max_active"`
-	// Close connections after remaining idle for this duration. If the value
-	// is zero, then idle connections are not closed. Applications should set
-	// the timeout to a value less than the server's timeout.
+	MaxActive       int `json:"max_active" toml:"max_active"`
 	IdleTimeoutMins int `json:"idle_timeout_mins" toml:"idle_timeout_mins"`
 	// If Wait is true and the pool is at the MaxActive limit, then Get() waits
 	// for a connection to be returned to the pool before returning.
@@ -67,6 +52,14 @@ func (rc *RedisConfig) assert() error {
 		return fmt.Errorf("both addr and raw_url cannot be empty")
 	}
 	return nil
+}
+
+func (rc *RedisConfig) expandEnv() {
+	rc.ID = os.ExpandEnv(rc.ID)
+	rc.Network = os.ExpandEnv(rc.Network)
+	rc.Host = os.ExpandEnv(rc.Host)
+	rc.Pwd = os.ExpandEnv(rc.Pwd)
+	rc.RawURL = os.ExpandEnv(rc.RawURL)
 }
 
 func (rc *RedisConfig) defaults() {
@@ -97,6 +90,7 @@ func (rc *RedisConfig) defaults() {
 
 func (rc *RedisConfig) connect() {
 	rc.once.Do(func() {
+		rc.expandEnv()
 		if err := rc.assert(); err != nil {
 			log.Fatal(err.Error())
 		}

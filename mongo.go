@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"os"
 	"sync"
 
 	"go.mongodb.org/mongo-driver/mongo"
@@ -25,6 +26,16 @@ type MongoConfig struct {
 	once             sync.Once
 }
 
+func (mc *MongoConfig) expandEnv() {
+	mc.ID = os.ExpandEnv(mc.ID)
+	mc.DB = os.ExpandEnv(mc.DB)
+	mc.User = os.ExpandEnv(mc.User)
+	mc.Pwd = os.ExpandEnv(mc.Pwd)
+	mc.AuthSource = os.ExpandEnv(mc.AuthSource)
+	mc.Host = os.ExpandEnv(mc.Host)
+	mc.ConnectionString = os.ExpandEnv(mc.ConnectionString)
+}
+
 func (mc *MongoConfig) defaults() {
 	if mc.Host == "" {
 		mc.Host = "localhost"
@@ -36,6 +47,7 @@ func (mc *MongoConfig) defaults() {
 }
 
 func (mc *MongoConfig) prepareURI() {
+	mc.expandEnv()
 	if mc.ConnectionString != "" {
 		return
 	}

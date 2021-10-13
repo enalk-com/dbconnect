@@ -3,6 +3,7 @@ package dbconnect
 import (
 	"context"
 	"fmt"
+	"os"
 	"strings"
 	"sync"
 
@@ -58,7 +59,25 @@ func (rc *RoachConfig) defaults() {
 	}
 }
 
+func (rc *RoachConfig) expandEnv() {
+	rc.ID = os.ExpandEnv(rc.ID)
+	rc.Host = os.ExpandEnv(rc.Host)
+	rc.User = os.ExpandEnv(rc.User)
+	rc.Pwd = os.ExpandEnv(rc.Pwd)
+	rc.DB = os.ExpandEnv(rc.DB)
+	rc.SSLMode = os.ExpandEnv(rc.SSLMode)
+	rc.ApplicationName = os.ExpandEnv(rc.ApplicationName)
+	rc.SSLCert = os.ExpandEnv(rc.SSLCert)
+	rc.SSLKey = os.ExpandEnv(rc.SSLKey)
+	rc.SSLRootCert = os.ExpandEnv(rc.SSLRootCert)
+	rc.Options = roachOps{
+		ClusterName: os.ExpandEnv(rc.Options.ClusterName),
+		C:           os.ExpandEnv(rc.Options.C),
+	}
+}
+
 func (rc RoachConfig) connString() string {
+	(&rc).expandEnv()
 	var auth string
 	if rc.User != "" {
 		auth = rc.User
