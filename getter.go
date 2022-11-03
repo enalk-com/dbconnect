@@ -2,7 +2,6 @@ package dbconnect
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 
 	"github.com/gomodule/redigo/redis"
@@ -12,87 +11,52 @@ import (
 )
 
 // GetPQ returns a pointer to an pgxpool.Pool instance identified by input
-func GetPQ(id string) (*pgxpool.Pool, error) {
-	if pqMap == nil {
+func (c Conns) GetPQ(id string) (*pgxpool.Pool, error) {
+	if c.pqMap == nil {
 		return nil, fmt.Errorf("possibly no postgresql configurations provided")
 	}
 
-	if _, ok := pqMap[id]; !ok {
+	if _, ok := c.pqMap[id]; !ok {
 		return nil, fmt.Errorf("no postgreql configuration for ID: %s found", id)
 	}
 
-	return pqMap[id].db()
-}
-
-// GetPQConfig returns the configuration struct used to create this connection
-func GetPQConfig(id string) ([]byte, error) {
-	if pqMap == nil {
-		return nil, fmt.Errorf("possibly no postgresql configurations provided")
-	}
-
-	if _, ok := pqMap[id]; !ok {
-		return nil, fmt.Errorf("no postgreql configuration for ID: %s found", id)
-	}
-
-	b, err := json.Marshal(pqMap[id])
-	if err != nil {
-		return nil, fmt.Errorf("error marshalling configuration: %s", err.Error())
-	}
-
-	return b, nil
+	return c.c.PQ[c.pqMap[id]].db()
 }
 
 // GetRoach returns a pointer to an pgxpool.Pool instance identified by input
-func GetRoach(id string) (*pgxpool.Pool, error) {
-	if roachMap == nil {
+func (c Conns) GetRoach(id string) (*pgxpool.Pool, error) {
+	if c.roachMap == nil {
 		return nil, fmt.Errorf("possibly no cockroachdb configurations provided")
 	}
 
-	if _, ok := roachMap[id]; !ok {
+	if _, ok := c.roachMap[id]; !ok {
 		return nil, fmt.Errorf("no cockroach configuration for ID: %s found", id)
 	}
 
-	return roachMap[id].db()
-}
-
-// GetRoachConfig returns the configuration struct used to create this connection
-func GetRoachConfig(id string) ([]byte, error) {
-	if roachMap == nil {
-		return nil, fmt.Errorf("possibly no cockroach db configurations provided")
-	}
-
-	if _, ok := roachMap[id]; !ok {
-		return nil, fmt.Errorf("no cockroach db configuration for ID: %s found", id)
-	}
-
-	b, err := json.Marshal(roachMap[id])
-	if err != nil {
-		return nil, fmt.Errorf("error marshalling configuration: %s", err.Error())
-	}
-
-	return b, nil
+	return c.c.CockroachDB[c.roachMap[id]].db()
 }
 
 // GetRedisPool returns a pointer to a redis.Pool instance identified by input
-func GetRedisPool(id string) (*redis.Pool, error) {
-	if redisMap == nil {
+func (c Conns) GetRedisPool(id string) (*redis.Pool, error) {
+	if c.redisMap == nil {
 		return nil, fmt.Errorf("possibly no redis configurations provided")
 	}
 
-	if _, ok := redisMap[id]; !ok {
+	if _, ok := c.redisMap[id]; !ok {
 		return nil, fmt.Errorf("no redis configuration for ID: %s found", id)
 	}
 
-	return redisMap[id].pool()
+	return c.c.Redis[c.redisMap[id]].pool()
 }
 
 // GetRedisConn is a conveninece function; returns a redis.Conn instance identified by input
 // It is imperative that you close this connection after your work is done
 // e.g.
-//   conn, _ := dbconnect.GetRedisConn("redis_main")
-//   defer conn.Close()
-func GetRedisConn(id string) (redis.Conn, error) {
-	p, err := GetRedisPool(id)
+//
+//	conn, _ := dbconnect.GetRedisConn("redis_main")
+//	defer conn.Close()
+func (c Conns) GetRedisConn(id string) (redis.Conn, error) {
+	p, err := c.GetRedisPool(id)
 	if err != nil {
 		return nil, err
 	}
@@ -102,73 +66,39 @@ func GetRedisConn(id string) (redis.Conn, error) {
 }
 
 // GetRedisPubSubConn is a convenience function; returns a redis.PubSubConn instance identified by input
-func GetRedisPubSubConn(id string) (redis.PubSubConn, error) {
-	c, err := GetRedisConn(id)
+func (c Conns) GetRedisPubSubConn(id string) (redis.PubSubConn, error) {
+	conn, err := c.GetRedisConn(id)
 	if err != nil {
 		return redis.PubSubConn{}, err
 	}
 
 	return redis.PubSubConn{
-		Conn: c,
+		Conn: conn,
 	}, nil
 }
 
-// GetRedisConfig returns the configuration used to create this connection
-func GetRedisConfig(id string) ([]byte, error) {
-	if redisMap == nil {
-		return nil, fmt.Errorf("possibly no redis configurations provided")
-	}
-
-	if _, ok := redisMap[id]; !ok {
-		return nil, fmt.Errorf("no redis configuration for ID: %s found", id)
-	}
-
-	b, err := json.Marshal(redisMap[id])
-	if err != nil {
-		return nil, fmt.Errorf("error marshalling configuration: %s", err.Error())
-	}
-	return b, nil
-}
-
 // GetMongoClient returns a pointer to a mongo.Client instance identified by input
-func GetMongoClient(ctx context.Context, id string) (*mongo.Client, error) {
-	if mongoMap == nil {
+func (c Conns) GetMongoClient(ctx context.Context, id string) (*mongo.Client, error) {
+	if c.mongoMap == nil {
 		return nil, fmt.Errorf("possibly no mongo configurations provided")
 	}
 
-	if _, ok := mongoMap[id]; !ok {
+	if _, ok := c.mongoMap[id]; !ok {
 		return nil, fmt.Errorf("no mongo configuration for ID: %s found", id)
 	}
 
-	return mongoMap[id].client(ctx)
+	return c.c.Mongo[c.mongoMap[id]].client(ctx)
 }
 
 // GetMongoDB returns a pointer to a mongo.Database instance identified by input
-func GetMongoDB(ctx context.Context, id string, opts ...*options.DatabaseOptions) (*mongo.Database, error) {
-	if mongoMap == nil {
+func (c Conns) GetMongoDB(ctx context.Context, id string, opts ...*options.DatabaseOptions) (*mongo.Database, error) {
+	if c.mongoMap == nil {
 		return nil, fmt.Errorf("possibly no mongo configurations provided")
 	}
 
-	if _, ok := mongoMap[id]; !ok {
+	if _, ok := c.mongoMap[id]; !ok {
 		return nil, fmt.Errorf("no mongo configuration for ID: %s found", id)
 	}
 
-	return mongoMap[id].db(ctx, opts...)
-}
-
-// GetMongoConfig returns the configuration used to create this connection
-func GetMongoConfig(id string) ([]byte, error) {
-	if mongoMap == nil {
-		return nil, fmt.Errorf("possibly no mongo configurations provided")
-	}
-
-	if _, ok := mongoMap[id]; !ok {
-		return nil, fmt.Errorf("no mongo configuration for ID: %s found", id)
-	}
-
-	b, err := json.Marshal(mongoMap[id])
-	if err != nil {
-		return nil, fmt.Errorf("error marshalling configuration: %s", err.Error())
-	}
-	return b, nil
+	return c.c.Mongo[c.mongoMap[id]].db(ctx, opts...)
 }
